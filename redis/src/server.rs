@@ -1,12 +1,11 @@
-use std::io::{self, Write, Read};
+use std::io::{self, Read};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 
 use dashmap::DashMap;
-use nom::AsBytes;
 
 use crate::command::{handle_command, parse_command};
-use crate::message::{Message, parse_message, serialise_message};
+use crate::message::{Message, parse_message};
 
 const BUFFER_SIZE: usize = 1024;
 
@@ -67,9 +66,7 @@ where
 fn handle_message(message: &Message, stream: &mut TcpStream, db: &mut DB) 
 {
     let cmd = parse_command(message).unwrap();
-    let response_message = handle_command(&cmd, db);
-    let response_serialised = serialise_message(&response_message);
-    let _ = stream.write_all(response_serialised.as_bytes());
+    let _ = handle_command(&cmd, db, stream);
     // println!("{:?}", response_message);
     // println!("{:?}", String::from_utf8_lossy(response_serialised.as_bytes()));
 }
